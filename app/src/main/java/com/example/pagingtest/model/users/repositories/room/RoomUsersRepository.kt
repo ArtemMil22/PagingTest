@@ -39,6 +39,21 @@ class RoomUsersRepository(
         ).flow
     }
 
+    override suspend fun setIsFavorite(user: User, isFavorite: Boolean) = withContext(ioDispatcher) {
+        delay(1000)
+        throwErrorsIfEnabled()
+
+        val tuple = UpdateUserFavoriteFlagTuple(user.id, isFavorite)
+        usersDao.setIsFavorite(tuple)
+    }
+
+    override suspend fun delete(user: User) = withContext(ioDispatcher) {
+        delay(1000)
+        throwErrorsIfEnabled()
+
+        usersDao.delete(IdTuple(user.id))
+    }
+
     private suspend fun getUsers(pageIndex: Int, pageSize: Int, searchBy: String): List<User>
     = withContext(ioDispatcher) {
 
@@ -56,6 +71,10 @@ class RoomUsersRepository(
         // map UserDbEntity to User
         return@withContext list
             .map(UserDbEntity::toUser)
+    }
+
+    private fun throwErrorsIfEnabled() {
+        if (enableErrorsFlow.value) throw IllegalStateException("Error!")
     }
 
     private companion object {
